@@ -1,0 +1,12 @@
+body <- hist(bacterias$body, plot=F, breaks=6)
+v <- range(bacterias$body)
+classe <- length(body$counts)
+amplitude <- (v[2] - v[1]) / classe
+amplitude <- ceiling(amplitude)
+intervalo <- seq(v[1], amplitude * classe + v[1], by = amplitude)
+body.cut <- cut(bacterias$body, intervalo, right = FALSE)
+body.freq <- table(body.cut)
+cbind(body.freq)
+tabela.final <- data.frame(body.freq)
+edit(tabela.final)
+edit(bacterias)
