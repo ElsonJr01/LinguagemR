@@ -1,0 +1,100 @@
+
+# Carregar dados Animals
+data("Animals")
+head(Animals)
+
+# Explicação:
+# O conjunto de dados "Animals" contém informações sobre o peso corporal (body)
+# e o peso do cérebro (brain) de diferentes espécies de animais.
+
+### **1. Medidas Estatísticas**
+# Medidas de Tendência Central para a variável "body"
+media_body <- mean(Animals$body)
+mediana_body <- median(Animals$body)
+
+# Função para calcular a moda 
+calcular_moda <- function(vetor) {
+  freq <- table(vetor)  # Tabela de frequências
+  moda <- as.numeric(names(freq[freq == max(freq)]))  # Pega os valores com a frequência máxima
+  return(moda)
+}
+
+# Aplicar a função para encontrar a moda de "body"
+moda_body <- calcular_moda(Animals$body)
+
+# Exibir a moda 
+print(paste("Moda:", paste(moda_body, collapse=", ")))
+
+
+# Medidas de Dispersão para a variável "body"
+variancia_body <- var(Animals$body)
+desvio_padrao_body <- sd(Animals$body)
+
+# Exibir resultados
+print(paste("Média:", media_body))
+print(paste("Mediana:", mediana_body))
+print(paste("Moda:", moda_body))
+print(paste("Variância:", variancia_body))
+print(paste("Desvio Padrão:", desvio_padrao_body))
+
+# Tabela de Frequências para "body"
+frequencia_body <- table(Animals$body)
+print(frequencia_body)
+
+### **2. Visualizações com ggplot2**
+# Histograma do peso corporal dos animais
+ggplot(Animals, aes(x=body)) +
+  geom_histogram(bins=20, fill="red", color="black") +
+  labs(title="Histograma do Peso Corporal dos Animais", x="Peso Corporal (kg)", y="Frequência") +
+  theme_minimal()
+
+# Gráfico de Dispersão entre Peso Corporal e Peso do Cérebro
+ggplot(Animals, aes(x=body, y=brain)) +
+  geom_point(color="blue") +
+  labs(title="Gráfico de Dispersão: Peso Corporal vs Peso do Cérebro", x="Peso Corporal (kg)", y="Peso do Cérebro (g)") +
+  theme_minimal()
+
+### **3. Análise de Correlação**
+correlacao <- cor(Animals$body, Animals$brain)
+print(paste("Correlação:", correlacao))
+
+### **4. Regressão Linear**
+modelo_linear <- lm(brain ~ body, data=Animals)
+summary(modelo_linear)
+
+# Gráfico com linha de regressão linear
+ggplot(Animals, aes(x=body, y=brain)) +
+  geom_point(color="blue") +
+  geom_smooth(method="lm", color="red") +
+  labs(title="Regressão Linear: Peso Corporal vs Peso do Cérebro", x="Peso Corporal (kg)", y="Peso do Cérebro (g)") +
+  theme_minimal()
+
+# Predição para um novo valor de 'body' (ex: 10 kg)
+novo_valor <- data.frame(body=10)
+predicao <- predict(modelo_linear, newdata=novo_valor)
+print(paste("Predição para body=10kg:", round(predicao, 2)))
+
+### **5. Regressão Não Linear (Log-Log)**
+# Transformação logarítmica para verificar relação não linear
+ggplot(Animals, aes(x=log(body), y=log(brain))) +
+  geom_point() +
+  geom_smooth(method="lm", se=FALSE, color="blue") +
+  labs(title="Regressão Log-Log: Peso Corporal vs Peso do Cérebro", x="Log do Peso Corporal (kg)", y="Log do Peso do Cérebro (g)") +
+  theme_minimal()
+
+# Modelo de regressão log-log (exponencial)
+modelo_log <- lm(log(brain) ~ log(body), data=Animals)
+summary(modelo_log)
+
+# Predição para um novo valor de 'body' (ex: 100 kg) usando modelo não linear
+novo_valor_log <- data.frame(body=100)
+predicao_log <- predict(modelo_log, newdata=novo_valor_log)
+predicao_original <- exp(predicao_log)  # Para retornar ao valor original
+print(paste("Predição log-log para body=100kg:", round(predicao_original, 2)))
+
+# Gráfico final comparando modelo não linear 
+ggplot(Animals, aes(x=body, y=brain)) +
+  geom_point() +
+  geom_line(aes(y=exp(modelo_log$fitted.values)), color="green") +
+  labs(title="Ajuste do Modelo Não Linear", x="Peso Corporal (kg)", y="Peso do Cérebro (g)") +
+  theme_minimal()
