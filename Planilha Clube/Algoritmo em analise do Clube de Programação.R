@@ -1,33 +1,32 @@
-# Carregar bibliotecas
 library(ggplot2)
 library(dplyr)
 library(stringr)
 library(scales)
 library(tidyr)
 
-# Ler os dados diretamente do GitHub
+# Ler os dados GitHub
 url <- "https://raw.githubusercontent.com/ElsonJr01/LinguagemR/refs/heads/main/Planilha%20Clube/Inscri%C3%A7%C3%A3o%20Clube%20de%20Programa%C3%A7%C3%A3o%202025%20Dados%20Tratados.csv"
 dados <- read.csv(url, sep = ";", encoding = "UTF-8")
 
-# Limpeza forte dos cursos para não repetir "Eng. Civil"
+# Limpeza forte dos cursos para não repetir "Eng. Civil por conta dos espaços no fim dos nomes"
 dados$Curso <- dados$Curso %>%
   str_to_lower() %>%        # tudo minúsculo
   str_trim() %>%            # remove espaços
-  str_replace_all("\\s+", " ") %>% # substitui múltiplos espaços por um
+  str_replace_all("\\s+", " ") %>% # substitui multiplos espaços por um
   str_to_title()            # volta para título
 
-# Separar oficinas e limpar também
+# Separar oficinas e limpa também
 dados_oficinas <- dados %>%
   mutate(Oficinas = str_split(Oficinas, ",\\s*")) %>%
   unnest(Oficinas) %>%
   mutate(Oficinas = str_trim(Oficinas))
 
-# Agrupar e contar inscrições únicas (gráfico original)
+# Agrupar e contar inscrições únicas
 resultado <- dados_oficinas %>%
   group_by(Curso, Oficinas) %>%
   summarise(Contagem = n(), .groups = "drop")
 
-# Definir cores personalizadas
+# Definir cores 
 cor_eng_comp <- "darkblue"
 cores_cursos <- c("Engenharia Da Computacao" = cor_eng_comp)
 
@@ -41,7 +40,7 @@ for (curso in names(cores_cursos)) {
   }
 }
 
-# 🎯 Gráfico 1: Distribuição por Oficina e Curso
+# Gráfico 1: Distribuição Oficina e Curso
 ggplot(resultado, aes(x = Contagem, y = Oficinas, fill = Curso)) +
   geom_bar(stat = "identity", position = "dodge", color = "black") +
   labs(
@@ -59,7 +58,7 @@ ggplot(resultado, aes(x = Contagem, y = Oficinas, fill = Curso)) +
   ) +
   scale_fill_manual(values = paleta_cursos)
 
-# 🎯 Gráfico 2: Total de Inscritos por Curso
+# Gráfico 2: Total de Inscritos por Curso
 total_cursos <- dados %>%
   group_by(Curso) %>%
   summarise(Inscritos = n(), .groups = "drop") %>%
@@ -80,7 +79,7 @@ ggplot(total_cursos, aes(x = reorder(Curso, Inscritos), y = Inscritos, fill = Cu
   ) +
   scale_fill_manual(values = paleta_cursos)
 
-# 🎯 Gráfico 3: Proporção por Oficina (Gráfico Pizza com Porcentagem)
+# 3 Proporção por Oficina, Gráfico Pizza com Porcentagem
 total_oficinas <- dados_oficinas %>%
   group_by(Oficinas) %>%
   summarise(Inscritos = n(), .groups = "drop") %>%
